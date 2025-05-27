@@ -13,6 +13,7 @@ class TrackerServer:
 		self.peers = {}
 		self.login_history = {}
 		self.last_ping = {}
+		self.rooms = {}
 	
 	"""
 	Carrega o arquivo json que contém os usuários e senhas.
@@ -106,6 +107,39 @@ class TrackerServer:
 		else:
 			self.send_response(conn, "ERROR", "Usuário não logado.")
 	
+	def handle_create_room(self, conn, data):
+		room = data.get("room")
+		user = data.get("user")
+		
+		if not room or not user:
+			self.send_response(conn, "ERROR", "Parâmetros ausentes.")
+			return
+		
+		if room in self.rooms:
+			self.send_response(conn, "ERROR", f"A sala '{room}' já existe.")
+		else:
+			self.rooms[room] = [user]
+			self.send_response(conn, "OK", f"Sala '{room}' criada com sucesso.")
+	
+	def handle_join_room(self, conn, data):
+		room = data.get("room")
+		user = data.get("user")
+		
+		if not room or not user:
+			self.send_response(conn, "ERROR", "Parâmetros ausentes.")
+			return
+		
+		if room not in self.rooms:
+			self.send_response(conn, "ERROR", f"A sala '{room}' não existe.")
+		else:
+			if user not in self.rooms[room]:
+				self.rooms[room].append(user)
+			self.send_response(conn, "OK", f"Usuário '{user}' entrou na sala '{room}'.")
+	
+	def handle_list_rooms(self, conn):
+		room_list = list(self.rooms.keys())
+		self.send_response(conn, "OK", room_list)
+	
 	"""
 	Gerencia a conexão com o cliente, recebendo comandos e respondendo adequadamente.
 	"""
@@ -121,6 +155,12 @@ class TrackerServer:
 				self.handle_register(conn, data)
 			elif cmd == "LIST_PEERS":
 				self.handle_list_peers(conn)
+			elif cmd == "CREATE_ROOM":
+				self.handle_create_room(conn, data)
+			elif cmd == "JOIN_ROOM":
+				self.handle_join_room(conn, data)
+			elif cmd == "LIST_ROOMS":
+				self.handle_list_rooms(conn)
 			else:
 				self.send_response(conn, "ERROR", "Comando não suportado.")
 		except Exception as e:
