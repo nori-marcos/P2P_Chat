@@ -1,3 +1,27 @@
+---
+pdf_options:
+  format: A4
+  margin: 100px 40px
+  printBackground: true
+  displayHeaderFooter: true
+  headerTemplate: |
+    <div style="width: 100%; padding-right: 40px; box-sizing: border-box; font-family: sans-serif; font-size: 10px; text-align: right;">
+    </div>
+  footerTemplate: |
+    <style>
+      section {
+        font-family: sans-serif;
+        font-size: 10px;
+        width: 100%;
+        text-align: center;
+      }
+    </style>
+    <section>
+      Página <span class="pageNumber"></span> de <span class="totalPages"></span>
+    </section>
+highlightTheme: monokai
+---
+
 **Universidade de Brasília (UnB)**  
 Departamento de Ciência da Computação  
 Disciplina: Redes de Computadores <br>
@@ -9,16 +33,12 @@ Disciplina: Redes de Computadores <br>
 <h1>Trabalho Prático: Implementação de um Chat P2P</h1>
 </div>
 
-![GitHub Icon](https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Octicons-mark-github.svg/20px-Octicons-mark-github.svg.png)
 [**Link do repositório no github**](https://github.com/nori-marcos/P2P_Chat.git)
 
 **Índice**
 
 > - [P2P Chat](#p2p-chat)
-    >
-
-- [1. Tracker](#1-tracker)
-
+    > - [1. Tracker](#1-tracker)
 > - [2. Peer](#2-peer)
 
 # P2P Chat
@@ -73,5 +93,25 @@ Em relação aos principais métodos:
   CREATE_ROOM, LIST_ROOMS, JOIN_ROOM. Ele recebe as requisições dos peers e chama o método apropriado para tratá-las.
 - `start()`: Inicia o servidor tracker, escutando conexões na porta especificada e aguardando requisições dos peers.
 
+### Captura de tela
+#### Registro de usuário
+Caso em que usuário já existe:
+![img.png](captions/wireshark-registration.png)
+
+Comunicação entre o tracker e o peer:
+![img.png](captions/wireshark-registration-stream.png)
+
+Logs do tracker e do peer:
+![img.png](captions/terminal-tracker-peer-logs.png)
+
+Caso de sucesso:
+![img.png](captions/terminal-peer-registration-log.png)
+
+#### Autenticação de usuário
+Teste de autenticação com válido e inválido:
+![img.png](captions/terminal-peer-login-log.png)
+
+#### Registro de informação no arquivo JSON
+![img.png](captions/db-json.png)
 
 ## 2. Peer
