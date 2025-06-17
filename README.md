@@ -53,7 +53,7 @@ usuários. O users_db é um arquivo JSON que armazena o nome e a senha criptogra
 
 ```python
 class TrackerServer:
-	def __init__(self, host='0.0.0.0', port=6060, users_db='users_db.json'):
+	def __init__(self, host='localhost', port=6060, users_db='users_db.json'):
 		self.host = host
 		self.port = port
 		self.users_db = users_db
