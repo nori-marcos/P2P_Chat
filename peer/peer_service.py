@@ -7,29 +7,66 @@ from peer.peer_tracker_communication import PeerTrackerCommunication
 
 class PeerService:
 	def __init__(self):
+		self.print_lock = threading.Lock()
 		self.current_room = None
+		
+		self.COLOR_RESET = "\033[0m"
+		self.available_colors = [
+				"\033[36m",  # Cyan
+				"\033[32m",  # Green
+				"\033[33m",  # Yellow
+				"\033[34m",  # Blue
+				"\033[35m",  # Magenta
+				"\033[31m",  # Red
+		]
+		self.peer_colors = {}
+		
 		self.peer_comm = PeerPeerCommunication(message_callback=self.handle_p2p_message)
 		self.tracker_comm = PeerTrackerCommunication(
 				self.peer_comm.actual_address,
 				self.peer_comm.actual_port,
-				self  # Pass a reference to this PeerService instance
+				self
 		)
 		self.username = None
 	
-	def handle_p2p_message(self, command: str, sender_username: str, message_data: dict):
-		if command == "MESSAGE":
-			content = message_data.get('content')
-			room_name = message_data.get('room')
-			print(f"\r[MENSAGEM na sala {room_name} de {sender_username}] {content}")
-			print(f"Você ({self.username}): ", end="", flush=True)
+	def _get_peer_color(self, username: str) -> str:
+		if username in self.peer_colors:
+			return self.peer_colors[username]
 		
-		elif command == "LEAVE":
-			print(f"\r[INFO] {sender_username} saiu da sala.")
-			print(f"Você ({self.username}): ", end="", flush=True)
+		hash_val = hash(username)
+		color_index = hash_val % len(self.available_colors)
+		color = self.available_colors[color_index]
+		
+		self.peer_colors[username] = color
+		return color
+	
+	def handle_p2p_message(self, command: str, sender_username: str, message_data: dict):
+		room_name = message_data.get('room')
+		if not self.current_room or self.current_room.name != room_name:
+			return
+		
+		with self.print_lock:
+			in_chat_prompt = self.current_room is not None
+			
+			user_color = self._get_peer_color(sender_username)
+			
+			if command == "MESSAGE":
+				content = message_data.get('content')
+				print(f"\r{user_color}[MENSAGEM na sala {room_name} de {sender_username}] {content}{self.COLOR_RESET}")
+			
+			elif command == "LEAVE":
+				print(f"\r{user_color}[INFO] {sender_username} saiu da sala.{self.COLOR_RESET}")
+			
+			if in_chat_prompt:
+				print(f"Você ({self.username}): ", end="", flush=True)
 	
 	def update_current_room(self, room_data: dict):
-		if self.current_room and room_data and self.current_room.name == room_data.get("name"):
-			print(f"\n[INFO] A sala '{self.current_room.name}' foi atualizada pelo tracker.")
+		
+		if not self.current_room or not room_data or self.current_room.name != room_data.get("name"):
+			return
+		
+		with self.print_lock:
+			print(f"\r[INFO] A sala '{self.current_room.name}' foi atualizada pelo tracker.")
 			
 			old_peers = set(self.current_room.get_participants_usernames())
 			self.current_room = Room.from_dict(room_data)
@@ -38,13 +75,12 @@ class PeerService:
 			added_peers = new_peers - old_peers
 			if added_peers:
 				print(f"[INFO] Novos peers entraram: {', '.join(added_peers)}")
-				all_peer_objects = self.current_room.list_participants()
-				peers_to_connect = [p.to_dict() for p in all_peer_objects if p.username in added_peers]
-				self.connect_to_room_peers(peers_to_connect)
 			
 			removed_peers = old_peers - new_peers
 			if removed_peers:
 				print(f"[INFO] Peers saíram: {', '.join(removed_peers)}")
+			
+			print(f"Você ({self.username}): ", end="", flush=True)
 	
 	def connect_to_room_peers(self, peers_info_list: list):
 		if not peers_info_list:

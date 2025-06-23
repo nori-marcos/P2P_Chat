@@ -28,5 +28,23 @@
     "peer_owner": null,
     "peer_one": null,
     "peer_two": null
+  },
+  "INFERNO": {
+    "name": "INFERNO",
+    "peer_owner": {
+      "username": "gabi",
+      "last_ping": {},
+      "address": "127.0.0.1",
+      "port": 47101,
+      "connected": true
+    },
+    "peer_one": null,
+    "peer_two": {
+      "username": "yuki",
+      "last_ping": {},
+      "address": "127.0.0.1",
+      "port": 33885,
+      "connected": true
+    }
   }
 }
