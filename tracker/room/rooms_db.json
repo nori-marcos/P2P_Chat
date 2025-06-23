@@ -1,38 +1,14 @@
 {
-  "sala1": {
-    "name": null,
-    "peer_owner": null,
-    "peer_one": null,
-    "peer_two": null
-  },
   "salinha": {
     "name": "salinha",
-    "peer_owner": null,
-    "peer_one": null,
-    "peer_two": null
-  },
-  "sala": {
-    "name": "sala",
     "peer_owner": {
       "username": "nori",
       "last_ping": {},
       "address": "127.0.0.1",
-      "port": 44759,
+      "port": 54539,
       "connected": true
     },
-    "peer_one": {
-      "username": "yuki",
-      "last_ping": {},
-      "address": "127.0.0.1",
-      "port": 50097,
-      "connected": true
-    },
-    "peer_two": {
-      "username": "gabi",
-      "last_ping": {},
-      "address": "127.0.0.1",
-      "port": 37681,
-      "connected": true
-    }
+    "peer_one": null,
+    "peer_two": null
   }
 }

@@ -1,27 +1,42 @@
 import threading
 
-from peer_peer_communication import PeerPeerCommunication
-from peer_tracker_communication import PeerTrackerCommunication
+from commons.peer import Peer
+from commons.room import Room
+from peer.peer_peer_communication import PeerPeerCommunication
+from peer.peer_tracker_communication import PeerTrackerCommunication
 
 
 class PeerService:
 	def __init__(self):
+		self.current_room = None
 		self.peer_comm = PeerPeerCommunication()
 		self.tracker_comm = PeerTrackerCommunication(
-				self.peer_comm.actual_host,
+				self.peer_comm.actual_address,
 				self.peer_comm.actual_port
 		)
 		self.username = None
-		self.current_room = None
+		self.online_peers = {}
+		self.available_rooms = {}
 	
-	def connect_to_room_peer(self, response):
-		peers = response.get("peers", [])
-		if peers:
-			for peer in peers:
-				if peer["username"] != self.username:
-					self.peer_comm.connect_to_peer(peer)
-		else:
-			print("Você é o primeiro da sala. Aguardando outros peers...")
+	def handle_user_message_in_room(self):
+		print(self.current_room)
+		while self.current_room and self.peer_comm.running:
+			try:
+				message = input("Digite sua mensagem (ou 'sair' para sair da sala): ").strip()
+				if message.lower() == "sair":
+					print("Saindo da sala...")
+					self.peer_comm.leave_room(self.current_room.get_participants_usernames())
+					self.current_room = None
+					return
+				if message:
+					for to_username in self.current_room.get_participants_usernames():
+						if to_username != self.username:
+							self.peer_comm.send_message(self.current_room.name, to_username, self.username, message)
+					print(f"Mensagem enviada para a sala {self.current_room.name}.")
+			except KeyboardInterrupt:
+				print("\nSaindo da sala...")
+				self.current_room = None
+				return
 	
 	def handle_user_input(self):
 		while self.peer_comm.running:
@@ -41,17 +56,19 @@ class PeerService:
 			choice = input("Escolha uma opção: ").strip()
 			
 			if choice == "1":
-				self.tracker_comm.list_peers()
-			
+				self.online_peers = self.tracker_comm.list_peers()
 			elif choice == "2":
-				self.tracker_comm.list_rooms()
-			
+				self.available_rooms = self.tracker_comm.list_rooms()
 			elif choice == "3":
 				if self.username:
-					room = self.tracker_comm.create_room(self.username)
-					if room:
-						self.current_room = room
+					room_name = self.tracker_comm.create_room(self.username)
+					if room_name:
+						self.current_room = Room(name=room_name, peer_owner=Peer(username=self.username,
+						                                                         address=self.peer_comm.actual_address,
+						                                                         port=self.peer_comm.actual_port,
+						                                                         connected=True))
 						print("Sala criada. Você é o primeiro peer da sala.")
+						self.handle_user_message_in_room()
 				else:
 					print("Você precisa estar logado para criar uma sala.")
 			
@@ -80,7 +97,7 @@ class PeerService:
 	
 	def handle_user_authentication(self):
 		print("=== PEER SERVICE ===")
-		print(f"Rodando em {self.peer_comm.actual_host}:{self.peer_comm.actual_port}")
+		print(f"Rodando em {self.peer_comm.actual_address}:{self.peer_comm.actual_port}")
 		while self.peer_comm.running:
 			print("\nOpções de autenticação:")
 			print("1. Login")

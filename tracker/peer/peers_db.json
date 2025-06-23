@@ -3,42 +3,42 @@
     "username": "alice",
     "last_ping": {},
     "address": "127.0.0.1",
-    "port": 9001,
+    "port": null,
     "connected": false
   },
   "bob": {
     "username": "bob",
     "last_ping": {},
     "address": "127.0.0.1",
-    "port": 9002,
+    "port": null,
     "connected": false
   },
   "charlie": {
     "username": "charlie",
     "last_ping": {},
     "address": "127.0.0.1",
-    "port": 9003,
+    "port": null,
     "connected": false
   },
   "nori": {
     "username": "nori",
     "last_ping": {},
     "address": "127.0.0.1",
-    "port": 44759,
+    "port": 54539,
     "connected": true
   },
   "gabi": {
     "username": "gabi",
     "last_ping": {},
     "address": "127.0.0.1",
-    "port": 37681,
+    "port": null,
     "connected": true
   },
   "yuki": {
     "username": "yuki",
     "last_ping": {},
     "address": "127.0.0.1",
-    "port": 50097,
+    "port": null,
     "connected": true
   }
 }

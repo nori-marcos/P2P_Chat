@@ -1,7 +1,7 @@
 import json
 import os
 
-from tracker.user.user import User
+from commons.user import User
 
 
 class UserRepository:
@@ -31,7 +31,7 @@ class UserRepository:
 			raw_users = {name: user.password for name, user in self.users.items()}
 			json.dump(raw_users, f, indent=2)
 	
-	def create(self, username, password):
+	def create_user(self, username, password):
 		if username in self.users:
 			return False
 		self.users[username] = User(username, password)

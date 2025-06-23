@@ -1,7 +1,7 @@
 import json
 import os
 
-from tracker.peer.peer import Peer
+from commons.peer import Peer
 
 
 class PeerRepository:
@@ -10,7 +10,7 @@ class PeerRepository:
         self.path = path or os.path.join(base_dir, "peers_db.json")
         self.peers = self.load_peers()
 
-    def load_peers(self):
+    def load_peers(self) -> dict[str, Peer]:
         if not os.path.exists(self.path):
             with open(self.path, "w") as f:
                 json.dump({}, f)

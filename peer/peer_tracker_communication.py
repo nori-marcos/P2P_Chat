@@ -2,10 +2,13 @@ import hashlib
 import json
 import socket
 
+from commons.peer import Peer
+from commons.room import Room
+
 
 class PeerTrackerCommunication:
-	def __init__(self, host, port):
-		self.actual_host = host
+	def __init__(self, address, port):
+		self.actual_address = address
 		self.actual_port = port
 	
 	def send_tracker_message(self, message):
@@ -25,7 +28,7 @@ class PeerTrackerCommunication:
 				"cmd": "LOGIN",
 				"username": username,
 				"password": hashed,
-				"host": self.actual_host,
+				"address": self.actual_address,
 				"port": self.actual_port
 		}
 		response = self.send_tracker_message(msg)
@@ -38,31 +41,38 @@ class PeerTrackerCommunication:
 				"cmd": "REGISTER",
 				"username": username,
 				"password": hashed,
-				"host": self.actual_host,
+				"address": self.actual_address,
 				"port": self.actual_port
 		}
 		response = self.send_tracker_message(msg)
 		print(f"{response.get('status')}: {response.get('msg')}")
 		return response
 	
-	def list_peers(self):
+	def list_peers(self) -> dict[str, Peer]:
 		response = self.send_tracker_message({"cmd": "LIST_PEERS"})
 		if response.get("status") == "OK":
 			print("Peers conectados:")
-			for peer in response.get("peers", []):
-				print(
-					f"- {peer['username']} (Status: {peer.get('status', 'desconhecido')}, Sala: {peer.get('room', 'nenhuma')})")
+			online_peers = {}
+			for username, peer_data in response.get("peers", {}).items():
+				online_peers[username] = Peer.from_dict(peer_data)
+				print(f"{username}")
+			return online_peers
 		else:
 			print(f"Erro: {response.get('msg', 'Nenhum peer conectado.')}")
+			return {}
 	
-	def list_rooms(self):
+	def list_rooms(self) -> dict[str, Room]:
 		response = self.send_tracker_message({"cmd": "LIST_ROOMS"})
+		rooms = {}
 		if response.get("status") == "OK":
 			print("Salas disponíveis:")
-			for room in response.get("msg", []):
-				print(f"- {room}")
+			for name, room in response.get("rooms", {}).items():
+				print(f"- {name}")
+				rooms[name] = Room.from_dict(room)
+			return rooms
 		else:
 			print(f"Erro: {response.get('msg', 'Nenhuma sala encontrada.')}")
+			return {}
 	
 	def create_room(self, username):
 		room_name = input("Nome da sala: ")

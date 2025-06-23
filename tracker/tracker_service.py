@@ -3,6 +3,9 @@ import socket
 import threading
 import time
 
+from tracker.handlers.PeerCommandHandler import PeerCommandHandler
+from tracker.handlers.RoomCommandHandler import RoomCommandHandler
+from tracker.handlers.UserCommandHandler import UserCommandHandler
 from tracker.peer.peer_repository import PeerRepository
 from tracker.room.room_repository import RoomRepository
 from tracker.user.user_repository import UserRepository
@@ -17,144 +20,48 @@ class TrackerService:
 		self.room_repo = RoomRepository()
 		self.peer_repo = PeerRepository()
 		self.user_repo = UserRepository()
+		
+		self.user_handler = UserCommandHandler(self.user_repo, self.peer_repo, self.send_response)
+		self.room_handler = RoomCommandHandler(self.room_repo, self.peer_repo, self.send_response)
+		self.peer_handler = PeerCommandHandler(self.peer_repo, self.send_response)
 	
 	def send_response(self, conn, status, msg=None, **extra_fields):
 		response = {"status": status}
 		if msg is not None:
 			response["msg"] = msg
 		response.update(extra_fields)
-		conn.send(json.dumps(response).encode("utf-8"))
-	
-	def login(self, conn, data):
-		username = data.get("username")
-		password = data.get("password")
-		host = data.get("host")
-		port = data.get("port")
-		
-		if self.user_repo.validate_user(username, password):
-			self.peer_repo.update_connection(username, host, port)
-			self.send_response(conn, "OK", "Login realizado com sucesso.")
-		else:
-			self.send_response(conn, "ERROR", "Credenciais inválidas.")
-	
-	def register(self, conn, data):
-		username = data.get("username")
-		password = data.get("password")
-		host = data.get("host")
-		port = data.get("port")
-		
-		if self.user_repo.user_exists(username):
-			self.send_response(conn, "ERROR", "Usuário já existe.")
-		else:
-			self.user_repo.create(username, password)
-			self.peer_repo.update_connection(username, host, port)
-			self.send_response(conn, "OK", "Usuário registrado com sucesso.")
-	
-	def list_peers(self, conn):
-		peer_list = []
-		for peer in self.peer_repo.get_all_peers():
-			status = "connected" if peer.connected else "disconnected"
-			peer_list.append({
-					"username": peer.username,
-					"status": status,
-					"room": self.get_room_of_peer(peer.username)
-			})
-		self.send_response(conn, "OK", peers=peer_list)
-	
-	def create_room(self, conn, data):
-		room = data.get("room")
-		user = data.get("username")
-		
-		if not room or not user:
-			self.send_response(conn, "ERROR", "Parâmetros ausentes.")
-			return
-		
-		peer_owner = self.peer_repo.get_peer(user)
-		if not peer_owner:
-			self.send_response(conn, "ERROR", f"Peer '{user}' não encontrado.")
-			return
-		
-		if self.room_repo.create_room(room, peer_owner):
-			self.send_response(conn, "OK", f"Sala '{room}' criada com sucesso.")
-		else:
-			self.send_response(conn, "ERROR", f"A sala '{room}' já existe.")
-	
-	def join_room(self, conn, data):
-		room = data.get("room")
-		username = data.get("username")
-		
-		if not room or not username:
-			self.send_response(conn, "ERROR", "Parâmetros ausentes.")
-			return
-		
-		peer = self.peer_repo.get_peer(username)
-		if not peer:
-			self.send_response(conn, "ERROR", "Peer não encontrado.")
-			return
-		
-		if self.room_repo.join_room(room, peer):
-			room_obj = self.room_repo.rooms.get(room)
-			participants = [room_obj.peer_owner, room_obj.peer_one, room_obj.peer_two]
-			
-			other_peers = [
-					p for p in participants if p and p.username != username
-			]
-			
-			peer_info_list = [
-					{
-							"username": p.username,
-							"address": p.address,
-							"port": p.port
-					} for p in other_peers
-			]
-			
-			self.send_response(
-					conn,
-					"OK",
-					f"Usuário '{username}' entrou na sala '{room}'.",
-					room=room,
-					peers=peer_info_list
-			)
-		else:
-			self.send_response(conn, "ERROR", f"A sala '{room}' não existe ou está cheia.")
-	
-	def list_rooms(self, conn):
-		room_names = self.room_repo.list_rooms()
-		self.send_response(conn, "OK", rooms=room_names)
-	
-	def client(self, conn, addr):
 		try:
-			raw = conn.recv(1024).decode("utf-8")
-			data = json.loads(raw)
+			conn.send(json.dumps(response).encode("utf-8"))
+		except (ConnectionResetError, BrokenPipeError) as e:
+			print(f"[AVISO] Não foi possível enviar resposta: {e}")
+	
+	def handle_client_request(self, conn, addr):
+		try:
+			raw_data = conn.recv(1024).decode("utf-8")
+			if not raw_data:
+				return
+			data = json.loads(raw_data)
 			cmd = data.get("cmd")
 			
-			match cmd:
-				case "LOGIN":
-					self.login(conn, data)
-				case "REGISTER":
-					self.register(conn, data)
-				case "LIST_PEERS":
-					self.list_peers(conn)
-				case "CREATE_ROOM":
-					self.create_room(conn, data)
-				case "JOIN_ROOM":
-					self.join_room(conn, data)
-				case "LIST_ROOMS":
-					self.list_rooms(conn)
-				case _:
-					self.send_response(conn, "ERROR", "Comando não suportado.")
+			if cmd in ["LOGIN", "REGISTER"]:
+				handler_method = getattr(self.user_handler, cmd.lower())
+				handler_method(conn, data)
+			elif cmd in ["CREATE_ROOM", "JOIN_ROOM", "LIST_ROOMS"]:
+				handler_method = getattr(self.room_handler, cmd.lower())
+				handler_method(conn, data)
+			elif cmd == "LIST_PEERS":
+				self.peer_handler.list_peers(conn, data)
+			else:
+				self.send_response(conn, "ERROR", "Comando não suportado.")
+		
+		except json.JSONDecodeError:
+			print(f"[ERRO] {addr}: Dados inválidos recebidos.")
+			self.send_response(conn, "ERROR", "JSON mal-formatado.")
 		except Exception as e:
 			print(f"[ERRO] {addr}: {e}")
 			self.send_response(conn, "ERROR", "Erro interno no servidor.")
 		finally:
 			conn.close()
-	
-	def get_room_of_peer(self, username):
-		for name, room in self.room_repo.rooms.items():
-			participants = [p.username for p in [room.peer_owner, room.peer_one, room.peer_two] if p]
-			if username in participants:
-				return name
-		return None
 	
 	def remove_peer_from_all_rooms(self, username):
 		for room in self.room_repo.rooms.values():
@@ -174,8 +81,8 @@ class TrackerService:
 	def ping_all_peers(self):
 		while True:
 			time.sleep(PING_INTERVAL)
-			for peer in self.peer_repo.get_all_peers():
-				if not peer.connected:
+			for peer in list(self.peer_repo.peers.values()):
+				if not peer.connected or not peer.address or not peer.port:
 					continue
 				try:
 					with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -208,7 +115,7 @@ class TrackerService:
 		
 		while True:
 			conn, addr = server_socket.accept()
-			thread = threading.Thread(target=self.client, args=(conn, addr))
+			thread = threading.Thread(target=self.handle_client_request, args=(conn, addr))
 			thread.start()
 
 
