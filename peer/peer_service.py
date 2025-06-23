@@ -10,6 +10,7 @@ class PeerService:
 	def __init__(self):
 		self.print_lock = threading.Lock()
 		self.current_room = None
+		self.private_chat_with = None
 		
 		self.COLOR_RESET = "\033[0m"
 		self.COLOR_SYSTEM = "\033[33m"
@@ -33,9 +34,11 @@ class PeerService:
 	
 	def safe_print(self, message, is_notification=False):
 		with self.print_lock:
-			if is_notification and self.current_room:
+			in_any_chat = self.current_room is not None or self.private_chat_with is not None
+			
+			if is_notification and in_any_chat:
 				prompt = f"Você ({self.username}): "
-				print("\r" + " " * (len(prompt) + 70) + "\r", end="")
+				print("\r" + " " * (len(prompt) + 80) + "\r", end="")
 				print(message)
 				print(prompt, end="", flush=True)
 			else:
@@ -57,7 +60,7 @@ class PeerService:
 		
 		if command == "MESSAGE":
 			content = message_data.get('content')
-			room_name = message_data.get('room')  # Check if a room name was included
+			room_name = message_data.get('room')
 			
 			if room_name is not None:
 				if self.current_room and self.current_room.name == room_name:
@@ -108,10 +111,10 @@ class PeerService:
 	
 	def handle_private_chat(self, peer_username: str):
 		self.clear_screen()
+		self.private_chat_with = peer_username
 		
 		user_color = self._get_peer_color(peer_username)
 		colored_peer = f"{user_color}{peer_username}{self.COLOR_RESET}"
-		
 		header = (
 				f"==================== CHAT PRIVADO COM: {colored_peer} ====================\n"
 				f" Digite /sair para encerrar a conversa.\n"
@@ -119,29 +122,28 @@ class PeerService:
 		)
 		self.safe_print(header)
 		
-		in_private_chat = True
-		while in_private_chat and self.peer_comm.running:
+		while self.private_chat_with and self.peer_comm.running:
 			try:
 				message = input(f"Você ({self.username}): ").strip()
 				
-				if message.lower() == "/sair":
+				if message.lower() == '/sair':
 					self.safe_print(f"Encerrando chat com {peer_username}...")
 					self.peer_comm.disconnect_from_peer(peer_username)
-					in_private_chat = False
+					self.private_chat_with = None
 					self.clear_screen()
-					continue
+					break
 				
 				if message:
 					timestamp = datetime.now().strftime('%H:%M:%S')
 					print("\033[1A\033[K", end="")
 					self.safe_print(f"[{timestamp}] <{self.username}> {message}")
-					
 					self.peer_comm.send_message(None, peer_username, self.username, message)
 			
 			except (KeyboardInterrupt, EOFError):
 				self.safe_print(f"\nEncerrando chat com {peer_username}...")
 				self.peer_comm.disconnect_from_peer(peer_username)
-				in_private_chat = False
+				self.private_chat_with = None
+				break
 		
 		self.safe_print("Retornando ao menu principal.")
 	
@@ -316,7 +318,7 @@ class PeerService:
 									self.safe_print(f"Falha na conexão com {peer_username}.")
 							else:
 								self.safe_print(
-									f"Peer '{peer_username}' está online, mas suas informações de conexão são inválidas.")
+										f"Peer '{peer_username}' está online, mas suas informações de conexão são inválidas.")
 						else:
 							self.safe_print(f"Peer '{peer_username}' não encontrado ou não está online.")
 					else:
