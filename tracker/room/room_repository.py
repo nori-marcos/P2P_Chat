@@ -1,6 +1,5 @@
 import json
 import os
-from typing import List
 
 from commons.peer import Peer
 from commons.room import Room
@@ -46,8 +45,12 @@ class RoomRepository:
 	
 	def join_room(self, room_name, peer: Peer) -> bool:
 		room = self.rooms.get(room_name)
+		
 		if not room:
 			return False
+		
+		if peer.username in room.get_participants_usernames():
+			return True
 		
 		if not room.peer_one:
 			room.peer_one = peer
@@ -59,18 +62,32 @@ class RoomRepository:
 		self.save_rooms()
 		return True
 	
+	def leave_room(self, room_name, peer: Peer) -> bool:
+		room = self.rooms.get(room_name)
+		if not room:
+			return False
+		
+		if room.peer_owner and room.peer_owner.username == peer.username:
+			del self.rooms[room_name]
+		elif room.peer_one and room.peer_one.username == peer.username:
+			room.peer_one = None
+		elif room.peer_two and room.peer_two.username == peer.username:
+			room.peer_two = None
+		else:
+			return False
+		
+		self.save_rooms()
+		return True
+	
 	def list_rooms(self):
 		return list(self.rooms.keys())
 	
-	def get_participants(self, room_name) -> List[Peer]:
-		room = self.rooms.get(room_name)
-		if not room:
-			return []
-		return [p for p in [room.peer_owner, room.peer_one, room.peer_two] if p]
-	
 	def get_room_of_peer(self, username):
 		for name, room in self.rooms.items():
-			participants = [p.username for p in self.get_participants(name) if p]
+			participants = room.get_participants_usernames()
 			if username in participants:
 				return name
 		return None
+	
+	def get_room(self, room_name) -> Room:
+		return self.rooms.get(room_name)

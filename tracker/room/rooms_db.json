@@ -1,13 +1,31 @@
 {
   "salinha": {
     "name": "salinha",
-    "peer_owner": {
-      "username": "nori",
-      "last_ping": {},
-      "address": "127.0.0.1",
-      "port": 54539,
-      "connected": true
-    },
+    "peer_owner": null,
+    "peer_one": null,
+    "peer_two": null
+  },
+  "sala": {
+    "name": "sala",
+    "peer_owner": null,
+    "peer_one": null,
+    "peer_two": null
+  },
+  "salona": {
+    "name": "salona",
+    "peer_owner": null,
+    "peer_one": null,
+    "peer_two": null
+  },
+  "ANA": {
+    "name": "ANA",
+    "peer_owner": null,
+    "peer_one": null,
+    "peer_two": null
+  },
+  "CEU": {
+    "name": "CEU",
+    "peer_owner": null,
     "peer_one": null,
     "peer_two": null
   }

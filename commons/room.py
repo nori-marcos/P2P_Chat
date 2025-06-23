@@ -12,10 +12,16 @@ class Room:
 	def to_dict(self) -> dict:
 		return {
 				"name": self.name,
-				"peer_owner": self.peer_owner.to_dict() if self.peer_owner else None,
-				"peer_one": self.peer_one.to_dict() if self.peer_one else None,
-				"peer_two": self.peer_two.to_dict() if self.peer_two else None
+				"peer_owner": self._safe_peer_to_dict(self.peer_owner),
+				"peer_one": self._safe_peer_to_dict(self.peer_one),
+				"peer_two": self._safe_peer_to_dict(self.peer_two)
 		}
+	
+	@staticmethod
+	def _safe_peer_to_dict(peer: Peer):
+		if peer and peer.connected and peer.address and peer.port:
+			return peer.to_dict()
+		return None
 	
 	@staticmethod
 	def from_dict(data: dict) -> 'Room':
@@ -34,4 +40,14 @@ class Room:
 			participants.append(self.peer_one.username)
 		if self.peer_two:
 			participants.append(self.peer_two.username)
+		return participants
+	
+	def list_participants(self) -> list[Peer]:
+		participants = []
+		if self.peer_owner:
+			participants.append(self.peer_owner)
+		if self.peer_one:
+			participants.append(self.peer_one)
+		if self.peer_two:
+			participants.append(self.peer_two)
 		return participants

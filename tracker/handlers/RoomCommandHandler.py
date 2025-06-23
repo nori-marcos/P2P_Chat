@@ -3,24 +3,33 @@ from tracker.room.room_repository import RoomRepository
 
 
 class RoomCommandHandler:
-	def __init__(self, room_repo: RoomRepository, peer_repo:PeerRepository, send_response_func):
+	def __init__(self, room_repo: RoomRepository, peer_repo: PeerRepository, send_response_func, active_connections):
 		self.room_repo = room_repo
 		self.peer_repo = peer_repo
 		self.send_response = send_response_func
+		self.active_connections = active_connections
+	
+	def _notify_participants(self, room_name: str, room_dict: dict, participants_to_notify: list):
+		for participant in participants_to_notify:
+			participant_socket = self.active_connections.get(participant.username)
+			if participant_socket:
+				print(f"[NOTIFICANDO] Enviando ROOM_UPDATE para {participant.username}")
+				self.send_response(
+						participant_socket, "ROOM_UPDATE",
+						msg=f"A configuração da sala '{room_name}' foi atualizada.",
+						room=room_dict
+				)
 	
 	def create_room(self, conn, data):
 		room_name = data.get("room")
 		username = data.get("username")
-		
 		if not room_name or not username:
 			self.send_response(conn, "ERROR", "Parâmetros ausentes.")
 			return
-		
 		peer_owner = self.peer_repo.get_peer(username)
 		if not peer_owner:
 			self.send_response(conn, "ERROR", f"Peer '{username}' não encontrado.")
 			return
-		
 		if self.room_repo.create_room(room_name, peer_owner):
 			self.send_response(conn, "OK", f"Sala '{room_name}' criada com sucesso.")
 		else:
@@ -29,7 +38,6 @@ class RoomCommandHandler:
 	def join_room(self, conn, data):
 		room_name = data.get("room")
 		username = data.get("username")
-		
 		if not room_name or not username:
 			self.send_response(conn, "ERROR", "Parâmetros ausentes.")
 			return
@@ -39,23 +47,51 @@ class RoomCommandHandler:
 			self.send_response(conn, "ERROR", "Peer não encontrado.")
 			return
 		
+		room = self.room_repo.get_room(room_name)
+		if not room:
+			self.send_response(conn, "ERROR", f"A sala '{room_name}' não existe.")
+			return
+		
+		existing_participants = room.list_participants()
+		
 		if self.room_repo.join_room(room_name, peer):
-			participants = self.room_repo.get_participants(room_name)
+			updated_room = self.room_repo.get_room(room_name)
+			updated_room_dict = updated_room.to_dict()
 			
-			other_peers_info = [
-					{"username": p.username, "address": p.address, "port": p.port}
-					for p in participants if p and p.username != username
-			]
+			self._notify_participants(room_name, updated_room_dict, existing_participants)
 			
 			self.send_response(
 					conn, "OK", f"Usuário '{username}' entrou na sala '{room_name}'.",
-					room=room_name, peers=other_peers_info
+					room=updated_room_dict
 			)
 		else:
 			self.send_response(conn, "ERROR", f"A sala '{room_name}' não existe ou está cheia.")
 	
+	def leave_room(self, conn, data):
+		room_name = data.get("room")
+		username = data.get("username")
+		if not room_name or not username:
+			self.send_response(conn, "ERROR", "Parâmetros ausentes.")
+			return
+		
+		peer = self.peer_repo.get_peer(username)
+		if not peer:
+			self.send_response(conn, "ERROR", "Peer não encontrado.")
+			return
+		
+		if self.room_repo.leave_room(room_name, peer):
+			updated_room = self.room_repo.get_room(room_name)
+			updated_room_dict = updated_room.to_dict() if updated_room else None
+			
+			if updated_room:
+				self._notify_participants(room_name, updated_room_dict, updated_room.list_participants())
+			
+			self.send_response(conn, "OK", f"Usuário '{username}' saiu da sala '{room_name}'.")
+		else:
+			self.send_response(conn, "ERROR", f"Usuário '{username}' não está na sala '{room_name}'.")
+	
 	def list_rooms(self, conn, data):
-		rooms = self.room_repo.load_rooms()
+		rooms = self.room_repo.rooms
 		room_as_dict = {
 				name: room.to_dict() for name, room in rooms.items()
 		}

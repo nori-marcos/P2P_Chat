@@ -21,9 +21,12 @@ class TrackerService:
 		self.peer_repo = PeerRepository()
 		self.user_repo = UserRepository()
 		
+		self.active_connections = {}
+		
 		self.user_handler = UserCommandHandler(self.user_repo, self.peer_repo, self.send_response)
-		self.room_handler = RoomCommandHandler(self.room_repo, self.peer_repo, self.send_response)
-		self.peer_handler = PeerCommandHandler(self.peer_repo, self.send_response)
+		self.room_handler = RoomCommandHandler(self.room_repo, self.peer_repo, self.send_response,
+		                                       self.active_connections, )
+		self.peer_handler = PeerCommandHandler(self.peer_repo, self.room_repo, self.send_response)
 	
 	def send_response(self, conn, status, msg=None, **extra_fields):
 		response = {"status": status}
@@ -35,32 +38,64 @@ class TrackerService:
 		except (ConnectionResetError, BrokenPipeError) as e:
 			print(f"[AVISO] Não foi possível enviar resposta: {e}")
 	
-	def handle_client_request(self, conn, addr):
+	def handle_client_session(self, conn, addr):
+		print(f"[NOVA CONEXÃO] de {addr}")
+		current_user = None
 		try:
-			raw_data = conn.recv(1024).decode("utf-8")
-			if not raw_data:
-				return
-			data = json.loads(raw_data)
-			cmd = data.get("cmd")
-			
-			if cmd in ["LOGIN", "REGISTER"]:
-				handler_method = getattr(self.user_handler, cmd.lower())
-				handler_method(conn, data)
-			elif cmd in ["CREATE_ROOM", "JOIN_ROOM", "LIST_ROOMS"]:
-				handler_method = getattr(self.room_handler, cmd.lower())
-				handler_method(conn, data)
-			elif cmd == "LIST_PEERS":
-				self.peer_handler.list_peers(conn, data)
-			else:
-				self.send_response(conn, "ERROR", "Comando não suportado.")
+			while True:
+				raw_data = conn.recv(1024).decode("utf-8")
+				if not raw_data:
+					break
+				
+				data = json.loads(raw_data)
+				cmd = data.get("cmd")
+				username = data.get("username")
+				
+				if current_user is None:
+					if cmd == "LOGIN":
+						if self.user_handler.login(data):
+							current_user = username
+							self.active_connections[current_user] = conn
+							print(f"[LOGIN] {current_user} logado. Conexão mantida.")
+							self.send_response(conn, "OK", "Login realizado com sucesso.")
+						else:
+							self.send_response(conn, "ERROR", "Credenciais inválidas.")
+							break
+					
+					elif cmd == "REGISTER":
+						if self.user_handler.register(data):
+							current_user = username
+							self.active_connections[current_user] = conn
+							print(f"[REGISTER] {current_user} registrado e logado. Conexão mantida.")
+							self.send_response(conn, "OK", "Usuário registrado com sucesso.")
+						else:
+							self.send_response(conn, "ERROR", "Usuário já existe.")
+							break
+					
+					else:
+						self.send_response(conn, "ERROR", "Comando inválido. Faça login ou registre-se primeiro.")
+						break
+				
+				else:
+					if cmd in ["CREATE_ROOM", "JOIN_ROOM", "LIST_ROOMS", "LEAVE_ROOM"]:
+						handler_method = getattr(self.room_handler, cmd.lower())
+						handler_method(conn, data)
+					elif cmd == "LIST_PEERS":
+						self.peer_handler.list_peers(conn, data)
+					elif cmd == "LOGOUT":
+						print(f"[LOGOUT] {current_user} desconectado.")
+						break
+					else:
+						self.send_response(conn, "ERROR", "Comando não suportado.")
 		
-		except json.JSONDecodeError:
-			print(f"[ERRO] {addr}: Dados inválidos recebidos.")
-			self.send_response(conn, "ERROR", "JSON mal-formatado.")
-		except Exception as e:
+		except (json.JSONDecodeError, ConnectionResetError) as e:
 			print(f"[ERRO] {addr}: {e}")
-			self.send_response(conn, "ERROR", "Erro interno no servidor.")
 		finally:
+			if current_user and current_user in self.active_connections:
+				del self.active_connections[current_user]
+				self.peer_repo.get_peer(current_user).connected = False
+				self.peer_repo.save_peers()
+				print(f"[SESSÃO ENCERRADA] {current_user} desconectado.")
 			conn.close()
 	
 	def remove_peer_from_all_rooms(self, username):
@@ -115,7 +150,7 @@ class TrackerService:
 		
 		while True:
 			conn, addr = server_socket.accept()
-			thread = threading.Thread(target=self.handle_client_request, args=(conn, addr))
+			thread = threading.Thread(target=self.handle_client_session, args=(conn, addr))
 			thread.start()
 
 

@@ -1,21 +1,22 @@
 from tracker.peer.peer_repository import PeerRepository
+from tracker.room.room_repository import RoomRepository
 
 
 class PeerCommandHandler:
-	def __init__(self, peer_repo: PeerRepository, send_response_func):
+	def __init__(self, peer_repo: PeerRepository, room_repo: RoomRepository, send_response_func):
 		self.peer_repo = peer_repo
+		self.room_repo = room_repo
 		self.send_response = send_response_func
 	
 	def list_peers(self, conn, data) -> None:
-		peers = self.peer_repo.load_peers()
+		online_peers_for_response = {}
 		
-		online_peers = {}
-		for username, peer in peers.items():
-			if peer.connected:
-				online_peers[username] = peer
+		for username, peer_object in self.peer_repo.peers.items():
+			
+			if peer_object.connected:
+				peer_data = peer_object.to_dict()
+				room_name = self.room_repo.get_room_of_peer(username)
+				peer_data['room'] = room_name if room_name else None
+				online_peers_for_response[username] = peer_data
 		
-		online_peers_as_dict = {
-				username: peer.to_dict() for username, peer in online_peers.items()
-		}
-		
-		self.send_response(conn, "OK", peers=online_peers_as_dict)
+		self.send_response(conn, "OK", peers=online_peers_for_response)
