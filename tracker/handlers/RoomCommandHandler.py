@@ -91,8 +91,19 @@ class RoomCommandHandler:
 			self.send_response(conn, "ERROR", f"Usuário '{username}' não está na sala '{room_name}'.")
 	
 	def list_rooms(self, conn, data):
-		rooms = self.room_repo.rooms
+		rooms = self.room_repo.load_rooms()
 		room_as_dict = {
 				name: room.to_dict() for name, room in rooms.items()
 		}
 		self.send_response(conn, "OK", rooms=room_as_dict)
+	
+	def delete_room(self, conn, data):
+		room_name = data.get("room")
+		if not room_name:
+			self.send_response(conn, "ERROR", "Parâmetro 'room' ausente.")
+			return
+		
+		if self.room_repo.delete_room(room_name):
+			self.send_response(conn, "OK", f"Sala '{room_name}' deletada com sucesso.")
+		else:
+			self.send_response(conn, "ERROR", f"A sala '{room_name}' não existe ou não pode ser deletada.")

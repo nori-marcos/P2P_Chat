@@ -68,7 +68,7 @@ class RoomRepository:
 			return False
 		
 		if room.peer_owner and room.peer_owner.username == peer.username:
-			del self.rooms[room_name]
+			pass
 		elif room.peer_one and room.peer_one.username == peer.username:
 			room.peer_one = None
 		elif room.peer_two and room.peer_two.username == peer.username:
@@ -91,3 +91,14 @@ class RoomRepository:
 	
 	def get_room(self, room_name) -> Room:
 		return self.rooms.get(room_name)
+	
+	def delete_room(self, room_name, username):
+		room = self.rooms.get(room_name)
+		if not room:
+			return False
+		
+		if room.peer_owner and room.peer_owner.username == username:
+			del self.rooms[room_name]
+			self.save_rooms()
+			return True
+		return False

@@ -15,6 +15,17 @@ class PeerPeerCommunication:
 		self.connections = {}
 		self.on_message_received = message_callback
 	
+	def disconnect_from_peer(self, username: str):
+		if username in self.connections:
+			conn = self.connections[username]
+			try:
+				leave_message = json.dumps({"cmd": "LEAVE", "room": None}).encode("utf-8")
+				conn.send(leave_message)
+			except Exception as e:
+				print(f"[ERRO] Falha ao notificar {username} ao sair: {e}")
+			finally:
+				self.cleanup_connection(conn, username)
+	
 	def peer_connection(self, conn):
 		try:
 			data = conn.recv(1024).decode("utf-8")
@@ -46,12 +57,15 @@ class PeerPeerCommunication:
 				if self.running:
 					print(f"[ERRO] na escuta de peers: {e}")
 	
-	def connect_to_peer(self, peer_info, from_username):
+	def connect_to_peer(self, peer_info, from_username) -> bool:  # It now returns a boolean
+		if peer_info['username'] in self.connections:
+			print(f"[INFO] Já conectado com {peer_info['username']}.")
+			return True
+		
 		try:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.settimeout(5)
 			s.connect((peer_info["address"], peer_info["port"]))
-			
 			s.settimeout(None)
 			
 			hello_msg = json.dumps({
@@ -62,9 +76,13 @@ class PeerPeerCommunication:
 			
 			self.connections[peer_info["username"]] = s
 			threading.Thread(target=self.receive_messages, args=(s, peer_info["username"]), daemon=True).start()
+			
 			print(f"[CONECTADO P2P] com {peer_info['username']}")
+			return True
+		
 		except Exception as e:
 			print(f"[FALHA] ao conectar com {peer_info['username']}: {e}")
+			return False
 	
 	def receive_messages(self, conn, username):
 		try:

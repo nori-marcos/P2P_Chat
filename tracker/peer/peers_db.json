@@ -24,21 +24,21 @@
     "username": "nori",
     "last_ping": {},
     "address": "127.0.0.1",
-    "port": 55883,
+    "port": 41149,
     "connected": true
   },
   "gabi": {
     "username": "gabi",
     "last_ping": {},
     "address": "127.0.0.1",
-    "port": 47101,
-    "connected": false
+    "port": 48121,
+    "connected": true
   },
   "yuki": {
     "username": "yuki",
     "last_ping": {},
     "address": "127.0.0.1",
-    "port": 33885,
+    "port": null,
     "connected": false
   }
 }

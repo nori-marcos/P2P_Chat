@@ -134,3 +134,11 @@ class PeerTrackerCommunication:
 				"username": username
 		})
 		return response
+	
+	def delete_room(self, username, room_name):
+		response = self.send_request({
+				"cmd": "DELETE_ROOM",
+				"room": room_name,
+				"username": username
+		})
+		return response

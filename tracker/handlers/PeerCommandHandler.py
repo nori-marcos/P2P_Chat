@@ -13,7 +13,7 @@ class PeerCommandHandler:
 		
 		for username, peer_object in self.peer_repo.peers.items():
 			
-			if peer_object.connected:
+			if peer_object.connected and peer_object.address and peer_object.port:
 				peer_data = peer_object.to_dict()
 				room_name = self.room_repo.get_room_of_peer(username)
 				peer_data['room'] = room_name if room_name else None

@@ -77,7 +77,7 @@ class TrackerService:
 						break
 				
 				else:
-					if cmd in ["CREATE_ROOM", "JOIN_ROOM", "LIST_ROOMS", "LEAVE_ROOM"]:
+					if cmd in ["CREATE_ROOM", "JOIN_ROOM", "LIST_ROOMS", "LEAVE_ROOM", "DELETE_ROOM",]:
 						handler_method = getattr(self.room_handler, cmd.lower())
 						handler_method(conn, data)
 					elif cmd == "LIST_PEERS":
