@@ -37,16 +37,17 @@ Disciplina: Redes de Computadores <br>
 
 **Índice**
 
-> - [P2P Chat](#p2p-chat)
-    > - [1. Tracker](#1-tracker)
-    > - [2. Peer](#2-peer)
-	 > - [1. PeerPeerCommunication](#1-peerpeercommunication)
-	 > - [2. PeerService](#2-peerservice) 
-	 > - [3. PeerTrackerCommunication](#3-peertrackercommunication)
-    > - [3. Commons](#3-commons)
- 	> - [1. Peer](#1-peer)
-	> - [2. Room](#1-room)
-	> - [3. User](#1-user)
+- [P2P Chat](#p2p-chat)
+  - [1. Tracker](#1-tracker)
+  - [2. Peer](#2-peer)
+    - [1. PeerPeerCommunication](#1-peerpeercommunication)
+    - [2. PeerService](#2-peerservice)
+    - [3. PeerTrackerCommunication](#3-peertrackercommunication)
+  - [3. Commons](#3-commons)
+    - [1. Peer](#1-peer-1)
+    - [2. Room](#2-room)
+    - [3. User](#3-user)
+
 
 # P2P Chat
 
