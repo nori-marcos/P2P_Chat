@@ -115,3 +115,50 @@ Teste de autenticação com válido e inválido:
 ![img.png](captions/db-json.png)
 
 ## 2. Peer
+
+O Peer representa um cliente na rede P2P que pode se comunicar com outros peers diretamente e também com o servidor Tracker. Ele realiza ações como autenticação, envio/recebimento de mensagens, participação em salas de bate-papo, e chats privados.
+
+### 1.PeerPeerCommunication
+Classe que gerencia conexões P2P com outros peers para envio e recebimento de mensagens.
+
+Atributos principais:
+-`host`: endereço local no qual o peer escuta conexões (por padrão, localhost).
+-`port`: porta onde escutará as conexões (se 0, o sistema escolhe).
+-`socket`: socket TCP que escuta as conexões.
+-`connections`: dicionário com peers conectados mapeados por nome de usuário.
+-`on_message_received`: callback que trata mensagens recebidas.
+
+Métodos principais:
+-`listen_for_peers()`: inicia a escuta por conexões P2P, aceitando peers que se conectam.
+-`peer_connection(conn)`: trata a conexão recebida de outro peer, verifica comandos como HELLO e PING.
+-`connect_to_peer(peer_info, from_username)`: conecta-se a outro peer utilizando IP e porta fornecidos, enviando mensagem HELLO.
+-`receive_messages(conn, username)`: escuta mensagens recebidas de um peer, tratando comandos como MESSAGE e LEAVE.
+-`send_message(room_name, to_username, from_username, content)`: envia uma mensagem a outro peer.
+-`leave_room(peers_in_room)`: envia um aviso de saída (LEAVE) a todos os peers de uma sala.
+-`disconnect_from_peer(username)`: encerra conexão com um peer específico.
+-`cleanup_connection(conn, username)`: remove conexões limpas do dicionário.
+-`close()`: encerra todas as conexões e o socket de escuta.
+
+### 2.PeerService
+
+Classe que representa o ciclo de vida do peer, interface com o usuário e a lógica principal da aplicação.
+
+Atributos principais:
+peer_comm: instância de PeerPeerCommunication.
+tracker_comm: instância de PeerTrackerCommunication.
+current_room: sala de chat atual em que o peer está.
+private_chat_with: usuário com quem o peer está em chat privado.
+username: nome do usuário autenticado.
+peer_colors: dicionário para colorir mensagens por usuário.
+
+Métodos principais:
+start(): inicia o peer, escutando conexões P2P e iniciando processo de autenticação.
+handle_user_authentication(): oferece opções de login, registro e saída.
+handle_user_input(): menu principal com opções de listar peers, criar/joinar salas, chat privado ou sair.
+handle_user_message_in_room(): trata o envio de mensagens em uma sala de chat, com comandos como /users, /sair, /deletar_sala.
+handle_private_chat(peer_username): inicia e gerencia um chat privado com outro peer.
+handle_p2p_message(command, sender_username, message_data): callback chamado quando uma mensagem P2P é recebida.
+update_current_room(room_data): atualiza os dados da sala atual com novos participantes ou remoções.
+connect_to_room_peers(peers_info_list): conecta-se aos peers de uma sala ao entrar nela.
+safe_print(message, is_notification=False): imprime mensagens com segurança em ambiente com múltiplas threads.
+clear_screen(): limpa a tela do terminal.
