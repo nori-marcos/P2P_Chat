@@ -144,21 +144,47 @@ Métodos principais:
 Classe que representa o ciclo de vida do peer, interface com o usuário e a lógica principal da aplicação.
 
 Atributos principais:
-peer_comm: instância de PeerPeerCommunication.
-tracker_comm: instância de PeerTrackerCommunication.
-current_room: sala de chat atual em que o peer está.
-private_chat_with: usuário com quem o peer está em chat privado.
-username: nome do usuário autenticado.
-peer_colors: dicionário para colorir mensagens por usuário.
+-`peer_comm`: instância de PeerPeerCommunication.
+-`tracker_comm`: instância de PeerTrackerCommunication.
+-`current_room`: sala de chat atual em que o peer está.
+-`private_chat_with`: usuário com quem o peer está em chat privado.
+-`username`: nome do usuário autenticado.
+-`peer_colors`: dicionário para colorir mensagens por usuário.
 
 Métodos principais:
-start(): inicia o peer, escutando conexões P2P e iniciando processo de autenticação.
-handle_user_authentication(): oferece opções de login, registro e saída.
-handle_user_input(): menu principal com opções de listar peers, criar/joinar salas, chat privado ou sair.
-handle_user_message_in_room(): trata o envio de mensagens em uma sala de chat, com comandos como /users, /sair, /deletar_sala.
-handle_private_chat(peer_username): inicia e gerencia um chat privado com outro peer.
-handle_p2p_message(command, sender_username, message_data): callback chamado quando uma mensagem P2P é recebida.
-update_current_room(room_data): atualiza os dados da sala atual com novos participantes ou remoções.
-connect_to_room_peers(peers_info_list): conecta-se aos peers de uma sala ao entrar nela.
-safe_print(message, is_notification=False): imprime mensagens com segurança em ambiente com múltiplas threads.
-clear_screen(): limpa a tela do terminal.
+-`start()`: inicia o peer, escutando conexões P2P e iniciando processo de autenticação.
+-`handle_user_authentication()`: oferece opções de login, registro e saída.
+-`handle_user_input()`: menu principal com opções de listar peers, criar/joinar salas, chat privado ou sair.
+-`handle_user_message_in_room()`: trata o envio de mensagens em uma sala de chat, com comandos como /users, /sair, /deletar_sala.
+-`handle_private_chat(peer_username)`: inicia e gerencia um chat privado com outro peer.
+-`handle_p2p_message(command, sender_username, message_data)`: callback chamado quando uma mensagem P2P é recebida.
+-`update_current_room(room_data)`: atualiza os dados da sala atual com novos participantes ou remoções.
+-`connect_to_room_peers(peers_info_list)`: conecta-se aos peers de uma sala ao entrar nela.
+-`safe_print(message, is_notification=False)`: imprime mensagens com segurança em ambiente com múltiplas threads.
+-`clear_screen()`: limpa a tela do terminal.
+
+### 3.PeerTrackerCommunication
+
+Classe que gerencia a comunicação entre o peer e o servidor tracker. Toda comunicação com o tracker (login, registro, criar/joinar sala, etc.) passa por aqui.
+
+Atributos principais:
+-`peer_host`: IP local do peer.
+-`peer_port`: porta na qual o peer está escutando.
+-`peer_service`: instância do PeerService que permite comunicação inversa com o peer.
+-`socket`: socket TCP conectado ao tracker.
+-`response_queue`: fila para armazenar respostas do tracker.
+-`listener_thread`: thread que escuta mensagens do tracker em tempo real.
+
+Métodos principais:
+-`connect()`: conecta ao servidor tracker e inicia a escuta assíncrona.
+-`listen_for_tracker_messages()`: escuta mensagens do tracker, como atualizações de sala (ROOM_UPDATE).
+-`send_request(message)`: envia uma requisição ao tracker e aguarda resposta.
+-`close()`: encerra conexão e thread com o tracker.
+-`login(username, password)`: realiza login do peer, enviando nome, senha (hash) e porta para conexão.
+-`register(username, password)`: registra um novo usuário no tracker.
+-`list_peers()`: solicita lista de peers conectados ao tracker.
+-`list_rooms()`: solicita lista de salas criadas.
+-`create_room(username, room_name)`: cria uma nova sala de chat.
+-`join_room(username, room_name)`: entra em uma sala existente.
+-`leave_room(username, room_name)`: sai de uma sala de chat.
+-`delete_room(username, room_name)`: remove uma sala (apenas se o peer for o dono).
