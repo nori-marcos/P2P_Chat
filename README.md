@@ -39,7 +39,14 @@ Disciplina: Redes de Computadores <br>
 
 > - [P2P Chat](#p2p-chat)
     > - [1. Tracker](#1-tracker)
-> - [2. Peer](#2-peer)
+    > - [2. Peer](#2-peer)
+	 > - [1. PeerPeerCommunication](#1-peerpeercommunication)
+	 > - [2. PeerService](#2-peerservice) 
+	 > - [3. PeerTrackerCommunication](#3-peertrackercommunication)
+    > - [3. Commons](#3-commons)
+ 	> - [1. Peer](#1-peer)
+	> - [2. Room](#1-room)
+	> - [3. User](#1-user)
 
 # P2P Chat
 
@@ -118,7 +125,7 @@ Teste de autenticação com válido e inválido:
 
 O Peer representa um cliente na rede P2P que pode se comunicar com outros peers diretamente e também com o servidor Tracker. Ele realiza ações como autenticação, envio/recebimento de mensagens, participação em salas de bate-papo, e chats privados.
 
-### 1.PeerPeerCommunication
+### 1. PeerPeerCommunication
 Classe que gerencia conexões P2P com outros peers para envio e recebimento de mensagens.
 
 Atributos principais:
@@ -139,7 +146,7 @@ Métodos principais:
 -`cleanup_connection(conn, username)`: remove conexões limpas do dicionário.
 -`close()`: encerra todas as conexões e o socket de escuta.
 
-### 2.PeerService
+### 2. PeerService
 
 Classe que representa o ciclo de vida do peer, interface com o usuário e a lógica principal da aplicação.
 
@@ -163,7 +170,7 @@ Métodos principais:
 -`safe_print(message, is_notification=False)`: imprime mensagens com segurança em ambiente com múltiplas threads.
 -`clear_screen()`: limpa a tela do terminal.
 
-### 3.PeerTrackerCommunication
+### 3. PeerTrackerCommunication
 
 Classe que gerencia a comunicação entre o peer e o servidor tracker. Toda comunicação com o tracker (login, registro, criar/joinar sala, etc.) passa por aqui.
 
@@ -188,3 +195,48 @@ Métodos principais:
 -`join_room(username, room_name)`: entra em uma sala existente.
 -`leave_room(username, room_name)`: sai de uma sala de chat.
 -`delete_room(username, room_name)`: remove uma sala (apenas se o peer for o dono).
+
+## 3. Commons
+
+### 1. Peer
+
+A classe Peer representa um participante conectado na rede P2P, com suas informações essenciais para comunicação e status.
+
+Atributos principais:
+-``username: nome de usuário do peer.
+-``last_ping: dicionário com timestamps dos últimos ping, indicando quando o peer esteve ativo.
+-``address: endereço IP do peer.
+-``port: porta utilizada pelo peer (embora inicializado com None por padrão).
+-``connected: booleano que indica se o peer está online.
+
+Métodos principais:
+-``to_dict(): converte o peer em dicionário com campos username, last_ping, address, port e connected, permitindo envio via JSON.
+-``@staticmethod from_dict(data): cria uma instância de Peer a partir de um dicionário com as mesmas chaves.
+
+### 2. Room
+
+A classe Room modela uma sala de chat entre até três peers, incluindo seu dono e convidados.
+
+Atributos principais:
+-`name`: nome da sala.
+-`peer_owner`: objeto Peer que criou a sala.
+-`peer_one, peer_two`: objetos Peer participantes subsequentes.
+
+Métodos principais:
+-`to_dict()`: converte a sala para um dicionário, incluindo somente peers com conexão ativa (connected=True), endereço e porta definidos; peers inválidos são omitidos com None.
+-`_safe_peer_to_dict(peer)`: método auxiliar para checar se um peer pode ser representado; retorna peer.to_dict() ou None.
+-`@staticmethod from_dict(data)`: reconstrói a instância Room a partir de dados do tracker.
+-`get_participants_usernames()`: retorna uma lista com os nomes de usuário dos peers presentes (owner, peer_one e peer_two, se existirem).
+-`list_participants()`: retorna lista de objetos Peer presentes na sala.
+
+### 3. User
+
+A classe User representa o usuário no sistema de autenticação e registro (no tracker).
+
+Atributos principais:
+-`username`: nome de usuário.
+-`password`: senha armazenada (geralmente já criptografada).
+
+Métodos principais:
+-`to_dict()`: retorna apenas a senha (espera-se que seja um valor criptografado) — usado ao salvar no JSON de usuários.
+-`@staticmethod from_dict(username, password)`: instância um User a partir das credenciais.
