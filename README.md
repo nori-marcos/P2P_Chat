@@ -47,10 +47,10 @@ Disciplina: Redes de Computadores <br>
     - [1. Peer](#1-peer-1)
     - [2. Room](#2-room)
     - [3. User](#3-user)
-    - [4. Captura de tela](#4-captura-de-tela)
-      - [Registro de usuário](#registro-de-usuário)
-      - [Autenticação de usuário](#autenticação-de-usuário)
-      - [Registro de informação no arquivo JSON](#registro-de-informação-no-arquivo-json)
+  - [4. Captura de tela](#4-captura-de-tela)
+    - [Registro de usuário](#registro-de-usuário)
+    - [Autenticação de usuário](#autenticação-de-usuário)
+    - [Registro de informação no arquivo JSON](#registro-de-informação-no-arquivo-json)
 
 
 # P2P Chat
