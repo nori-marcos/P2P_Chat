@@ -24,6 +24,6 @@ class UserCommandHandler:
 		if self.user_repo.user_exists(username):
 			return False
 		else:
-			self.user_repo.create(username, password)
+			self.user_repo.create_user(username, password)
 			self.peer_repo.update_connection(username, address, port)
 			return True
