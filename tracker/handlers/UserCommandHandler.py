@@ -26,4 +26,4 @@ class UserCommandHandler:
 		else:
 			self.user_repo.create(username, password)
 			self.peer_repo.update_connection(username, address, port)
-			return True  # Return True on success
+			return True

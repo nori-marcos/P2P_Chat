@@ -77,7 +77,7 @@ class PeerTrackerCommunication:
 		if self.socket:
 			self.socket.close()
 		if self.listener_thread:
-			self.listener_thread.join()  # Wait for the listener thread to finish
+			self.listener_thread.join()
 	
 	def login(self, username, password):
 		hashed = hashlib.sha256(password.encode()).hexdigest()

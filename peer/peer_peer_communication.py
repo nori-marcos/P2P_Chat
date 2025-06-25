@@ -57,7 +57,7 @@ class PeerPeerCommunication:
 				if self.running:
 					print(f"[ERRO] na escuta de peers: {e}")
 	
-	def connect_to_peer(self, peer_info, from_username) -> bool:  # It now returns a boolean
+	def connect_to_peer(self, peer_info, from_username) -> bool:
 		if peer_info['username'] in self.connections:
 			print(f"[INFO] Já conectado com {peer_info['username']}.")
 			return True
