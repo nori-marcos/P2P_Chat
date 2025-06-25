@@ -246,3 +246,17 @@ Teste de autenticação com válido e inválido: <br>
 ### Registro de informação no arquivo JSON
 ![img.png](captions/db-json.png)
 
+### Peer se conectando ao tracker
+![connected-peers.png](captions/connected-peers.png)
+
+### Criação de sala
+![created-room.png](captions/created-room.png)
+
+### Sala com três participantes
+![room-with-three-peers.png](captions/room-with-three-peers.png)
+
+### Três peers conectados
+![three-peers-chatting.png](captions/three-peers-chatting.png)
+
+### Três peers conversando na sala
+![three-peers-chatting.png](captions/three-peers-chatting.png)

@@ -1,37 +1,13 @@
 {
-  "salinha": {
-    "name": "salinha",
-    "peer_owner": null,
-    "peer_one": null,
-    "peer_two": null
-  },
-  "sala": {
-    "name": "sala",
-    "peer_owner": null,
-    "peer_one": null,
-    "peer_two": null
-  },
-  "salona": {
-    "name": "salona",
-    "peer_owner": null,
-    "peer_one": null,
-    "peer_two": null
-  },
-  "ANA": {
-    "name": "ANA",
-    "peer_owner": null,
-    "peer_one": null,
-    "peer_two": null
-  },
-  "CEU": {
-    "name": "CEU",
-    "peer_owner": null,
-    "peer_one": null,
-    "peer_two": null
-  },
-  "INFERNO": {
-    "name": "INFERNO",
-    "peer_owner": null,
+  "TESTE": {
+    "name": "TESTE",
+    "peer_owner": {
+      "username": "gabi",
+      "last_ping": {},
+      "address": "127.0.0.1",
+      "port": 46361,
+      "connected": true
+    },
     "peer_one": null,
     "peer_two": null
   }
