@@ -119,77 +119,77 @@ Em relação aos principais métodos:
 Classe responsável por gerenciar os dados de usuários registrados no sistema P2P. Atua como persistência simples via arquivo JSON local (users_db.json).
 
 Principais Atributos:
--`path`: caminho para o arquivo de banco de dados dos usuários (por padrão, users_db.json na mesma pasta do script).
--`users`: dicionário de usuários carregado do arquivo, com o formato {username: User}.
+- `path`: caminho para o arquivo de banco de dados dos usuários (por padrão, users_db.json na mesma pasta do script).
+- `users`: dicionário de usuários carregado do arquivo, com o formato {username: User}.
 
 Principais Métodos:
--`load_users()`:Carrega os usuários do arquivo JSON. Se o arquivo estiver vazio ou corrompido, recria um novo banco vazio.
--`save_users()`:Salva os dados atuais dos usuários no arquivo JSON, armazenando apenas os nomes de usuário e senhas.
--`create_user(username, password)`:Cria um novo usuário, se o nome ainda não estiver em uso. Retorna True em caso de sucesso ou False se já existir.
--`validate_user(username, password)`:Verifica se um usuário existe e se a senha fornecida é correta.
--`user_exists(username)`:Retorna True se o usuário já estiver registrado, caso contrário False.
--`get_user(username)`:Retorna o objeto User correspondente ao username, ou None se não existir.
+- `load_users()`:Carrega os usuários do arquivo JSON. Se o arquivo estiver vazio ou corrompido, recria um novo banco vazio.
+- `save_users()`:Salva os dados atuais dos usuários no arquivo JSON, armazenando apenas os nomes de usuário e senhas.
+- `create_user(username, password)`:Cria um novo usuário, se o nome ainda não estiver em uso. Retorna True em caso de sucesso ou False se já existir.
+- `validate_user(username, password)`:Verifica se um usuário existe e se a senha fornecida é correta.
+- `user_exists(username)`:Retorna True se o usuário já estiver registrado, caso contrário False.
+- `get_user(username)`:Retorna o objeto User correspondente ao username, ou None se não existir.
 
 ### 1.2. RoomRepository
-Classe responsável por gerenciar as salas de bate-papo (rooms) do sistema P2P, realizando persistência local no arquivo rooms_db.json.
+Classe responsável por gerenciar as salas de bate- papo (rooms) do sistema P2P, realizando persistência local no arquivo rooms_db.json.
 
 Principais Atributos:
--`path`: caminho do arquivo JSON onde os dados das salas são armazenados.
--`rooms`: dicionário que mapeia nomes de salas para objetos Room.
+- `path`: caminho do arquivo JSON onde os dados das salas são armazenados.
+- `rooms`: dicionário que mapeia nomes de salas para objetos Room.
 
 Principais Métodos:
--`load_rooms()`:Carrega todas as salas a partir do arquivo JSON. Se estiver vazio ou corrompido, recria um arquivo novo.
--`_save_empty_rooms()`:Cria e salva um dicionário de salas vazio no arquivo JSON.
--`save_rooms()`:Serializa e salva o dicionário atual de salas (self.rooms) no arquivo.
--`create_room(room_name, peer_owner)`:Cria uma nova sala com o peer_owner como proprietário. Retorna True em caso de sucesso ou False se a sala já existir.
--`join_room(room_name, peer)`:Adiciona um peer a uma sala existente como peer_one ou peer_two, se houver espaço disponível. Retorna True em caso de sucesso.
--`leave_room(room_name, peer)`:Remove o peer da sala, se ele estiver presente. Proprietários não são removidos automaticamente aqui.
--`list_rooms()`:Retorna a lista com os nomes de todas as salas registradas.
--`get_room_of_peer(username)`:Retorna o nome da sala onde o username está presente, ou None se ele não estiver em nenhuma.
--`get_room(room_name)`:Retorna o objeto Room correspondente ao nome informado.
--`delete_room(room_name, username)`:Remove a sala caso o username seja o proprietário da mesma. Retorna True se a remoção foi bem-sucedida.
+- `load_rooms()`:Carrega todas as salas a partir do arquivo JSON. Se estiver vazio ou corrompido, recria um arquivo novo.
+- `_save_empty_rooms()`:Cria e salva um dicionário de salas vazio no arquivo JSON.
+- `save_rooms()`:Serializa e salva o dicionário atual de salas (self.rooms) no arquivo.
+- `create_room(room_name, peer_owner)`:Cria uma nova sala com o peer_owner como proprietário. Retorna True em caso de sucesso ou False se a sala já existir.
+- `join_room(room_name, peer)`:Adiciona um peer a uma sala existente como peer_one ou peer_two, se houver espaço disponível. Retorna True em caso de sucesso.
+- `leave_room(room_name, peer)`:Remove o peer da sala, se ele estiver presente. Proprietários não são removidos automaticamente aqui.
+- `list_rooms()`:Retorna a lista com os nomes de todas as salas registradas.
+- `get_room_of_peer(username)`:Retorna o nome da sala onde o username está presente, ou None se ele não estiver em nenhuma.
+- `get_room(room_name)`:Retorna o objeto Room correspondente ao nome informado.
+- `delete_room(room_name, username)`:Remove a sala caso o username seja o proprietário da mesma. Retorna True se a remoção foi bem- sucedida.
 
 
 ### 1.3. PeerRepository
 Classe responsável por gerenciar os Peers registrados no sistema P2P, mantendo o estado de conexão e persistência local no arquivo peers_db.json.
 
 Principais Atributos:
--`path`: caminho do arquivo onde os peers são salvos em JSON.
--`peers`: dicionário que associa nomes de usuários a objetos Peer.
+- `path`: caminho do arquivo onde os peers são salvos em JSON.
+- `peers`: dicionário que associa nomes de usuários a objetos Peer.
 
 Principais Métodos:
--`load_peers()`:Carrega os peers do arquivo JSON. Se não existir ou estiver corrompido, recria um arquivo vazio.
--`save_peers()`:Salva o dicionário atual de peers em formato JSON no arquivo.
--`add_peer(peer)`:Adiciona um novo Peer ao repositório, sobrescrevendo se já existir, e persiste a mudança.
--`remove_peer(username)`:Remove um peer pelo username e salva a alteração.
--`get_peer(username)`:Retorna o objeto Peer correspondente ao nome, ou None se não existir.
--`get_all_peers()`:Retorna uma lista com todos os peers cadastrados.
--`is_connected(username)`:Retorna True se o peer está conectado (connected == True), senão False.
--`update_connection(username, address, port)`:Atualiza o endereço, porta e status de conexão de um peer. Cria um novo Peer se ele ainda não existir.
+- `load_peers()`:Carrega os peers do arquivo JSON. Se não existir ou estiver corrompido, recria um arquivo vazio.
+- `save_peers()`:Salva o dicionário atual de peers em formato JSON no arquivo.
+- `add_peer(peer)`:Adiciona um novo Peer ao repositório, sobrescrevendo se já existir, e persiste a mudança.
+- `remove_peer(username)`:Remove um peer pelo username e salva a alteração.
+- `get_peer(username)`:Retorna o objeto Peer correspondente ao nome, ou None se não existir.
+- `get_all_peers()`:Retorna uma lista com todos os peers cadastrados.
+- `is_connected(username)`:Retorna True se o peer está conectado (connected == True), senão False.
+- `update_connection(username, address, port)`:Atualiza o endereço, porta e status de conexão de um peer. Cria um novo Peer se ele ainda não existir.
 
 ### 1.4. UserCommandHandler
 Responsável por processar ações de autenticação e registro de usuários. Usa os repositórios de usuários (UserRepository) e peers (PeerRepository).
 
 Principais Métodos:
--`login(data)`:Autentica o usuário a partir de username e password. Se válido, atualiza o peer com IP e porta.
--`register(data)`:Registra um novo usuário se ele ainda não existir e atualiza os dados de conexão no PeerRepository.
+- `login(data)`:Autentica o usuário a partir de username e password. Se válido, atualiza o peer com IP e porta.
+- `register(data)`:Registra um novo usuário se ele ainda não existir e atualiza os dados de conexão no PeerRepository.
 
 ###  1.5. RoomCommandHandler
 Gerencia as operações de salas de bate-papo. Interage com os repositórios de salas (RoomRepository) e peers (PeerRepository), além de manter notificações por conexão ativa.
 
 Principais Métodos:
--`create_room(conn, data)`:Cria uma sala com um peer como proprietário, se ela ainda não existir.
--`join_room(conn, data)`:Permite que um peer entre em uma sala existente. Notifica os demais participantes.
--`leave_room(conn, data)`:Remove o peer da sala e atualiza os demais participantes, se necessário.
--`list_rooms(conn, data)`:Retorna todas as salas disponíveis e seus dados.
--`delete_room(conn, data)`:Exclui a sala se o peer solicitante for o proprietário.
--`_notify_participants(...)`:Função interna usada para notificar os participantes de uma sala quando ela é atualizada.
+- `create_room(conn, data)`:Cria uma sala com um peer como proprietário, se ela ainda não existir.
+- `join_room(conn, data)`:Permite que um peer entre em uma sala existente. Notifica os demais participantes.
+- `leave_room(conn, data)`:Remove o peer da sala e atualiza os demais participantes, se necessário.
+- `list_rooms(conn, data)`:Retorna todas as salas disponíveis e seus dados.
+- `delete_room(conn, data)`:Exclui a sala se o peer solicitante for o proprietário.
+- `_notify_participants(...)`:Função interna usada para notificar os participantes de uma sala quando ela é atualizada.
 
 ###  1.6. PeerCommandHandler
 Responsável por fornecer informações sobre peers conectados.
 
 Principais Métodos:
--`list_peers(conn, data)`:Lista todos os peers atualmente conectados e disponíveis para comunicação, incluindo a sala em que estão (se aplicável).
+- `list_peers(conn, data)`:Lista todos os peers atualmente conectados e disponíveis para comunicação, incluindo a sala em que estão (se aplicável).
 
 ## 2. Peer
 
