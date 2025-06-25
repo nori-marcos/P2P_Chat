@@ -37,19 +37,30 @@ Disciplina: Redes de Computadores <br>
 
 **Índice**
 
-- [P2P Chat](#p2p-chat)
-  - [1. Tracker](#1-tracker)
-    - [1.1 UserRepository](#1-userRepository)
-    - [1.1 UserRepository](#1-userRepository)
-    - [1.1 UserRepository](#1-userRepository)
-  - [2. Peer](#2-peer)
-    - [1. PeerPeerCommunication](#1-peerpeercommunication)
-    - [2. PeerService](#2-peerservice)
-    - [3. PeerTrackerCommunication](#3-peertrackercommunication)
-  - [3. Commons](#3-commons)
-    - [1. Peer](#1-peer-1)
-    - [2. Room](#2-room)
-    - [3. User](#3-user)
+- [1. Tracker](#1-tracker)
+  - [1.1. UserRepository](#11-userrepository)
+  - [1.2. RoomRepository](#12-roomrepository)
+  - [1.3. PeerRepository](#13-peerrepository)
+  - [1.4. UserCommandHandler](#14-usercommandhandler)
+  - [1.5. RoomCommandHandler](#15-roomcommandhandler)
+  - [1.6. PeerCommandHandler](#16-peercommandhandler)
+- [2. Peer](#2-peer)
+  - [2.1. PeerPeerCommunication](#21-peerpeercommunication)
+  - [2.2. PeerService](#22-peerservice)
+  - [2.3. PeerTrackerCommunication](#23-peertrackercommunication)
+- [3. Commons](#3-commons)
+  - [3.1. Peer](#31-peer)
+  - [3.2. Room](#32-room)
+  - [3.3. User](#33-user)
+- [4. Captura de tela](#4-captura-de-tela)
+  - [4.1. Registro de usuário](#41-registro-de-usuário)
+  - [4.2. Autenticação de usuário](#42-autenticação-de-usuário)
+  - [4.3. Registro de informação no arquivo JSON](#43-registro-de-informação-no-arquivo-json)
+  - [4.4. Peer se conectando ao tracker](#44-peer-se-conectando-ao-tracker)
+  - [4.5. Criação de sala](#45-criação-de-sala)
+  - [4.6. Sala com três participantes](#46-sala-com-três-participantes)
+  - [4.7. Três peers conectados](#47-três-peers-conectados)
+  - [4.8. Três peers conversando na sala](#48-três-peers-conversando-na-sala)
 
 
 # P2P Chat
@@ -104,7 +115,7 @@ Em relação aos principais métodos:
   CREATE_ROOM, LIST_ROOMS, JOIN_ROOM. Ele recebe as requisições dos peers e chama o método apropriado para tratá-las.
 - `start()`: Inicia o servidor tracker, escutando conexões na porta especificada e aguardando requisições dos peers.
 
-### 1.1 UserRepository
+### 1.1. UserRepository
 Classe responsável por gerenciar os dados de usuários registrados no sistema P2P. Atua como persistência simples via arquivo JSON local (users_db.json).
 
 Principais Atributos:
@@ -156,15 +167,14 @@ Principais Métodos:
 -`is_connected(username)`:Retorna True se o peer está conectado (connected == True), senão False.
 -`update_connection(username, address, port)`:Atualiza o endereço, porta e status de conexão de um peer. Cria um novo Peer se ele ainda não existir.
 
-### 1.4. Handlers
-#### UserCommandHandler
+### 1.4. UserCommandHandler
 Responsável por processar ações de autenticação e registro de usuários. Usa os repositórios de usuários (UserRepository) e peers (PeerRepository).
 
 Principais Métodos:
 -`login(data)`:Autentica o usuário a partir de username e password. Se válido, atualiza o peer com IP e porta.
 -`register(data)`:Registra um novo usuário se ele ainda não existir e atualiza os dados de conexão no PeerRepository.
 
-####  1.4.1. RoomCommandHandler
+###  1.5. RoomCommandHandler
 Gerencia as operações de salas de bate-papo. Interage com os repositórios de salas (RoomRepository) e peers (PeerRepository), além de manter notificações por conexão ativa.
 
 Principais Métodos:
@@ -175,7 +185,7 @@ Principais Métodos:
 -`delete_room(conn, data)`:Exclui a sala se o peer solicitante for o proprietário.
 -`_notify_participants(...)`:Função interna usada para notificar os participantes de uma sala quando ela é atualizada.
 
-####  .1.4.2. PeerCommandHandler
+###  1.6. PeerCommandHandler
 Responsável por fornecer informações sobre peers conectados.
 
 Principais Métodos:
@@ -206,7 +216,7 @@ Métodos principais:
 - `cleanup_connection(conn, username)`: remove conexões limpas do dicionário.
 - `close()`: encerra todas as conexões e o socket de escuta.
 
-### 2.2 PeerService
+### 2.2. PeerService
 
 Classe que representa o ciclo de vida do peer, interface com o usuário e a lógica principal da aplicação.
 
@@ -289,7 +299,7 @@ Métodos principais:
 - `get_participants_usernames()`: retorna uma lista com os nomes de usuário dos peers presentes (owner, peer_one e peer_two, se existirem).
 - `list_participants()`: retorna lista de objetos Peer presentes na sala.
 
-## 3.3. User
+### 3.3. User
 
 A classe User representa o usuário no sistema de autenticação e registro (no tracker).
 
@@ -302,7 +312,7 @@ Métodos principais:
 - `@staticmethod from_dict(username, password)`: instância um User a partir das credenciais.
 
 ## 4. Captura de tela
-#### Registro de usuário
+### 4.1. Registro de usuário
 Caso em que usuário já existe:
 ![img.png](captions/wireshark-registration.png)
 
@@ -315,24 +325,24 @@ Logs do tracker e do peer:
 Caso de sucesso:
 ![img.png](captions/terminal-peer-registration-log.png)
 
-#### Autenticação de usuário
+### 4.2. Autenticação de usuário
 Teste de autenticação com válido e inválido:
 ![img.png](captions/terminal-peer-login-log.png)
 
-#### Registro de informação no arquivo JSON
+### 4.3. Registro de informação no arquivo JSON
 ![img.png](captions/db-json.png)
 
-### Peer se conectando ao tracker
+### 4.4. Peer se conectando ao tracker
 ![connected-peers.png](captions/connected-peers.png)
 
-### Criação de sala
+### 4.5. Criação de sala
 ![created-room.png](captions/created-room.png)
 
-### Sala com três participantes
+### 4.6. Sala com três participantes
 ![room-with-three-peers.png](captions/room-with-three-peers.png)
 
-### Três peers conectados
+### 4.7. Três peers conectados
 ![three-peers-chatting.png](captions/three-peers-chatting.png)
 
-### Três peers conversando na sala
+### 4.8. Três peers conversando na sala
 ![three-peers-chatting.png](captions/three-peers-chatting.png)
