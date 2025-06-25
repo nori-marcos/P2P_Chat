@@ -101,27 +101,6 @@ Em relação aos principais métodos:
   CREATE_ROOM, LIST_ROOMS, JOIN_ROOM. Ele recebe as requisições dos peers e chama o método apropriado para tratá-las.
 - `start()`: Inicia o servidor tracker, escutando conexões na porta especificada e aguardando requisições dos peers.
 
-### Captura de tela
-#### Registro de usuário
-Caso em que usuário já existe:
-![img.png](captions/wireshark-registration.png)
-
-Comunicação entre o tracker e o peer:
-![img.png](captions/wireshark-registration-stream.png)
-
-Logs do tracker e do peer:
-![img.png](captions/terminal-tracker-peer-logs.png)
-
-Caso de sucesso:
-![img.png](captions/terminal-peer-registration-log.png)
-
-#### Autenticação de usuário
-Teste de autenticação com válido e inválido:
-![img.png](captions/terminal-peer-login-log.png)
-
-#### Registro de informação no arquivo JSON
-![img.png](captions/db-json.png)
-
 ## 2. Peer
 
 O Peer representa um cliente na rede P2P que pode se comunicar com outros peers diretamente e também com o servidor Tracker. Ele realiza ações como autenticação, envio/recebimento de mensagens, participação em salas de bate-papo, e chats privados.
@@ -230,7 +209,7 @@ Métodos principais:
 - `get_participants_usernames()`: retorna uma lista com os nomes de usuário dos peers presentes (owner, peer_one e peer_two, se existirem).
 - `list_participants()`: retorna lista de objetos Peer presentes na sala.
 
-### 3. User
+## 3. User
 
 A classe User representa o usuário no sistema de autenticação e registro (no tracker).
 
@@ -241,3 +220,25 @@ Atributos principais:
 Métodos principais:
 - `to_dict()`: retorna apenas a senha (espera-se que seja um valor criptografado) — usado ao salvar no JSON de usuários.
 - `@staticmethod from_dict(username, password)`: instância um User a partir das credenciais.
+
+## Captura de tela
+#### Registro de usuário
+Caso em que usuário já existe:
+![img.png](captions/wireshark-registration.png)
+
+Comunicação entre o tracker e o peer:
+![img.png](captions/wireshark-registration-stream.png)
+
+Logs do tracker e do peer:
+![img.png](captions/terminal-tracker-peer-logs.png)
+
+Caso de sucesso:
+![img.png](captions/terminal-peer-registration-log.png)
+
+#### Autenticação de usuário
+Teste de autenticação com válido e inválido:
+![img.png](captions/terminal-peer-login-log.png)
+
+#### Registro de informação no arquivo JSON
+![img.png](captions/db-json.png)
+
