@@ -47,6 +47,10 @@ Disciplina: Redes de Computadores <br>
     - [1. Peer](#1-peer-1)
     - [2. Room](#2-room)
     - [3. User](#3-user)
+    - [4. Captura de tela](#4-captura-de-tela)
+      - [Registro de usuário](#registro-de-usuário)
+      - [Autenticação de usuário](#autenticação-de-usuário)
+      - [Registro de informação no arquivo JSON](#registro-de-informação-no-arquivo-json)
 
 
 # P2P Chat
@@ -221,24 +225,24 @@ Métodos principais:
 - `to_dict()`: retorna apenas a senha (espera-se que seja um valor criptografado) — usado ao salvar no JSON de usuários.
 - `@staticmethod from_dict(username, password)`: instância um User a partir das credenciais.
 
-## Captura de tela
-#### Registro de usuário
-Caso em que usuário já existe:
+## 4. Captura de tela
+### Registro de usuário
+Caso em que usuário já existe: <br>
 ![img.png](captions/wireshark-registration.png)
 
-Comunicação entre o tracker e o peer:
+Comunicação entre o tracker e o peer: <br>
 ![img.png](captions/wireshark-registration-stream.png)
 
-Logs do tracker e do peer:
+Logs do tracker e do peer: <br>
 ![img.png](captions/terminal-tracker-peer-logs.png)
 
-Caso de sucesso:
+Caso de sucesso: <br>
 ![img.png](captions/terminal-peer-registration-log.png)
 
-#### Autenticação de usuário
-Teste de autenticação com válido e inválido:
+### Autenticação de usuário
+Teste de autenticação com válido e inválido: <br>
 ![img.png](captions/terminal-peer-login-log.png)
 
-#### Registro de informação no arquivo JSON
+### Registro de informação no arquivo JSON
 ![img.png](captions/db-json.png)
 
