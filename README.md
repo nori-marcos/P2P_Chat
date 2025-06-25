@@ -39,6 +39,9 @@ Disciplina: Redes de Computadores <br>
 
 - [P2P Chat](#p2p-chat)
   - [1. Tracker](#1-tracker)
+    - [1.1 UserRepository](#1-userRepository)
+    - [1.1 UserRepository](#1-userRepository)
+    - [1.1 UserRepository](#1-userRepository)
   - [2. Peer](#2-peer)
     - [1. PeerPeerCommunication](#1-peerpeercommunication)
     - [2. PeerService](#2-peerservice)
@@ -101,11 +104,88 @@ Em relação aos principais métodos:
   CREATE_ROOM, LIST_ROOMS, JOIN_ROOM. Ele recebe as requisições dos peers e chama o método apropriado para tratá-las.
 - `start()`: Inicia o servidor tracker, escutando conexões na porta especificada e aguardando requisições dos peers.
 
+### 1.1 UserRepository
+Classe responsável por gerenciar os dados de usuários registrados no sistema P2P. Atua como persistência simples via arquivo JSON local (users_db.json).
+
+Principais Atributos:
+-`path`: caminho para o arquivo de banco de dados dos usuários (por padrão, users_db.json na mesma pasta do script).
+-`users`: dicionário de usuários carregado do arquivo, com o formato {username: User}.
+
+Principais Métodos:
+-`load_users()`:Carrega os usuários do arquivo JSON. Se o arquivo estiver vazio ou corrompido, recria um novo banco vazio.
+-`save_users()`:Salva os dados atuais dos usuários no arquivo JSON, armazenando apenas os nomes de usuário e senhas.
+-`create_user(username, password)`:Cria um novo usuário, se o nome ainda não estiver em uso. Retorna True em caso de sucesso ou False se já existir.
+-`validate_user(username, password)`:Verifica se um usuário existe e se a senha fornecida é correta.
+-`user_exists(username)`:Retorna True se o usuário já estiver registrado, caso contrário False.
+-`get_user(username)`:Retorna o objeto User correspondente ao username, ou None se não existir.
+
+### 1.2. RoomRepository
+Classe responsável por gerenciar as salas de bate-papo (rooms) do sistema P2P, realizando persistência local no arquivo rooms_db.json.
+
+Principais Atributos:
+-`path`: caminho do arquivo JSON onde os dados das salas são armazenados.
+-`rooms`: dicionário que mapeia nomes de salas para objetos Room.
+
+Principais Métodos:
+-`load_rooms()`:Carrega todas as salas a partir do arquivo JSON. Se estiver vazio ou corrompido, recria um arquivo novo.
+-`_save_empty_rooms()`:Cria e salva um dicionário de salas vazio no arquivo JSON.
+-`save_rooms()`:Serializa e salva o dicionário atual de salas (self.rooms) no arquivo.
+-`create_room(room_name, peer_owner)`:Cria uma nova sala com o peer_owner como proprietário. Retorna True em caso de sucesso ou False se a sala já existir.
+-`join_room(room_name, peer)`:Adiciona um peer a uma sala existente como peer_one ou peer_two, se houver espaço disponível. Retorna True em caso de sucesso.
+-`leave_room(room_name, peer)`:Remove o peer da sala, se ele estiver presente. Proprietários não são removidos automaticamente aqui.
+-`list_rooms()`:Retorna a lista com os nomes de todas as salas registradas.
+-`get_room_of_peer(username)`:Retorna o nome da sala onde o username está presente, ou None se ele não estiver em nenhuma.
+-`get_room(room_name)`:Retorna o objeto Room correspondente ao nome informado.
+-`delete_room(room_name, username)`:Remove a sala caso o username seja o proprietário da mesma. Retorna True se a remoção foi bem-sucedida.
+
+
+### 1.3. PeerRepository
+Classe responsável por gerenciar os Peers registrados no sistema P2P, mantendo o estado de conexão e persistência local no arquivo peers_db.json.
+
+Principais Atributos:
+-`path`: caminho do arquivo onde os peers são salvos em JSON.
+-`peers`: dicionário que associa nomes de usuários a objetos Peer.
+
+Principais Métodos:
+-`load_peers()`:Carrega os peers do arquivo JSON. Se não existir ou estiver corrompido, recria um arquivo vazio.
+-`save_peers()`:Salva o dicionário atual de peers em formato JSON no arquivo.
+-`add_peer(peer)`:Adiciona um novo Peer ao repositório, sobrescrevendo se já existir, e persiste a mudança.
+-`remove_peer(username)`:Remove um peer pelo username e salva a alteração.
+-`get_peer(username)`:Retorna o objeto Peer correspondente ao nome, ou None se não existir.
+-`get_all_peers()`:Retorna uma lista com todos os peers cadastrados.
+-`is_connected(username)`:Retorna True se o peer está conectado (connected == True), senão False.
+-`update_connection(username, address, port)`:Atualiza o endereço, porta e status de conexão de um peer. Cria um novo Peer se ele ainda não existir.
+
+### 1.4. Handlers
+#### UserCommandHandler
+Responsável por processar ações de autenticação e registro de usuários. Usa os repositórios de usuários (UserRepository) e peers (PeerRepository).
+
+Principais Métodos:
+-`login(data)`:Autentica o usuário a partir de username e password. Se válido, atualiza o peer com IP e porta.
+-`register(data)`:Registra um novo usuário se ele ainda não existir e atualiza os dados de conexão no PeerRepository.
+
+####  1.4.1. RoomCommandHandler
+Gerencia as operações de salas de bate-papo. Interage com os repositórios de salas (RoomRepository) e peers (PeerRepository), além de manter notificações por conexão ativa.
+
+Principais Métodos:
+-`create_room(conn, data)`:Cria uma sala com um peer como proprietário, se ela ainda não existir.
+-`join_room(conn, data)`:Permite que um peer entre em uma sala existente. Notifica os demais participantes.
+-`leave_room(conn, data)`:Remove o peer da sala e atualiza os demais participantes, se necessário.
+-`list_rooms(conn, data)`:Retorna todas as salas disponíveis e seus dados.
+-`delete_room(conn, data)`:Exclui a sala se o peer solicitante for o proprietário.
+-`_notify_participants(...)`:Função interna usada para notificar os participantes de uma sala quando ela é atualizada.
+
+####  .1.4.2. PeerCommandHandler
+Responsável por fornecer informações sobre peers conectados.
+
+Principais Métodos:
+-`list_peers(conn, data)`:Lista todos os peers atualmente conectados e disponíveis para comunicação, incluindo a sala em que estão (se aplicável).
+
 ## 2. Peer
 
 O Peer representa um cliente na rede P2P que pode se comunicar com outros peers diretamente e também com o servidor Tracker. Ele realiza ações como autenticação, envio/recebimento de mensagens, participação em salas de bate-papo, e chats privados.
 
-### 1. PeerPeerCommunication
+### 2.1. PeerPeerCommunication
 Classe que gerencia conexões P2P com outros peers para envio e recebimento de mensagens.
 
 Atributos principais:
@@ -126,7 +206,7 @@ Métodos principais:
 - `cleanup_connection(conn, username)`: remove conexões limpas do dicionário.
 - `close()`: encerra todas as conexões e o socket de escuta.
 
-### 2. PeerService
+### 2.2 PeerService
 
 Classe que representa o ciclo de vida do peer, interface com o usuário e a lógica principal da aplicação.
 
@@ -150,7 +230,7 @@ Métodos principais:
 - `safe_print(message, is_notification=False)`: imprime mensagens com segurança em ambiente com múltiplas threads.
 - `clear_screen()`: limpa a tela do terminal.
 
-### 3. PeerTrackerCommunication
+### 2.3. PeerTrackerCommunication
 
 Classe que gerencia a comunicação entre o peer e o servidor tracker. Toda comunicação com o tracker (login, registro, criar/joinar sala, etc.) passa por aqui.
 
@@ -178,7 +258,7 @@ Métodos principais:
 
 ## 3. Commons
 
-### 1. Peer
+### 3.1. Peer
 
 A classe Peer representa um participante conectado na rede P2P, com suas informações essenciais para comunicação e status.
 
@@ -193,7 +273,7 @@ Métodos principais:
 - `to_dict()`: converte o peer em dicionário com campos username, last_ping, address, port e connected, permitindo envio via JSON.
 - `@staticmethod from_dict(data)`: cria uma instância de Peer a partir de um dicionário com as mesmas chaves.
 
-### 2. Room
+### 3.2. Room
 
 A classe Room modela uma sala de chat entre até três peers, incluindo seu dono e convidados.
 
@@ -209,7 +289,7 @@ Métodos principais:
 - `get_participants_usernames()`: retorna uma lista com os nomes de usuário dos peers presentes (owner, peer_one e peer_two, se existirem).
 - `list_participants()`: retorna lista de objetos Peer presentes na sala.
 
-## 3. User
+## 3.3. User
 
 A classe User representa o usuário no sistema de autenticação e registro (no tracker).
 
@@ -221,7 +301,7 @@ Métodos principais:
 - `to_dict()`: retorna apenas a senha (espera-se que seja um valor criptografado) — usado ao salvar no JSON de usuários.
 - `@staticmethod from_dict(username, password)`: instância um User a partir das credenciais.
 
-## Captura de tela
+## 4. Captura de tela
 #### Registro de usuário
 Caso em que usuário já existe:
 ![img.png](captions/wireshark-registration.png)
