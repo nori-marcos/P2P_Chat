@@ -366,7 +366,10 @@ class PeerService:
 				password = input("Senha: ")
 				response = self.tracker_comm.register(username, password)
 				if response and response.get("status") == "OK":
-					print(f"Registro bem-sucedido! Por favor, faça o login.")
+					self.username = username
+					self.peer_comm.username = username
+					print(f"Registro bem-sucedido!")
+					self.handle_user_input()
 				else:
 					print(f"Falha no registro: {response.get('msg')}")
 			
