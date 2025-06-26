@@ -99,11 +99,12 @@ class RoomCommandHandler:
 	
 	def delete_room(self, conn, data):
 		room_name = data.get("room")
+		username = data.get("username")
 		if not room_name:
 			self.send_response(conn, "ERROR", "Parâmetro 'room' ausente.")
 			return
 		
-		if self.room_repo.delete_room(room_name):
+		if self.room_repo.delete_room(room_name, username):
 			self.send_response(conn, "OK", f"Sala '{room_name}' deletada com sucesso.")
 		else:
 			self.send_response(conn, "ERROR", f"A sala '{room_name}' não existe ou não pode ser deletada.")
