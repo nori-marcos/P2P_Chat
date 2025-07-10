@@ -73,7 +73,7 @@ Disciplina: Redes de Computadores <br>
   - [6.6. Sala com três participantes](#66-sala-com-três-participantes)
   - [6.7. Três peers conectados](#67-três-peers-conectados)
   - [6.8. Três peers conversando na sala](#68-três-peers-conversando-na-sala)
-
+- [7. Como rodar](#7-como-rodar)
 # P2P Chat
 
 # 1. Arquitetura
@@ -556,3 +556,22 @@ Teste de autenticação com válido e inválido:
 ## 6.8. Três peers conversando na sala
 
 ![three-peers-chatting.png](captions/three-peers-chatting.png)
+
+# 7. Como rodar
+- Primeiramente verificar se tem instalado o python na sua máquina com os seguintes comandos ( power shell, bash ou cmd ):
+```python 
+python --version ou python3 --version
+```
+
+- Copie o repositorio com o comando no seu cmd ou git bash:
+```python 
+git clone https://github.com/nori-marcos/P2P_Chat.git
+```
+
+- Abra o repositorio no vs code pode abrir clicando encima do arquivo baixado > botão direito > abrir com e escolhe abrir com vs code;
+
+* Após abrir o vs code abra seu terminal ou seu git bash e abrir dependendo da quantidade de peers que voce desejar abra os terminais conforme a necessidade de usuarios:
+```python 
+phyton -m tracker.tracker_service (1 terminal apenas)
+phyton -m peer.peer_service (pode criar terminais paralelos dependendo da sua necessidade)
+```
